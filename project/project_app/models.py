@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 
 class User(models.Model):
@@ -10,6 +11,10 @@ class User(models.Model):
     password = models.CharField(max_length=256)
     role = models.IntegerField()
     icon = models.ImageField()
+
+    def get_role(self):
+        role_dict = {1: "manager", 2: "project_leader", 3: "worker"}
+        return role_dict[self.role]
 
 
 class Project(models.Model):
@@ -33,6 +38,13 @@ class Task(models.Model):
     story_point = models.IntegerField()
     date_of_completion = models.DateTimeField()
     sprint_id = models.IntegerField()
+    end_date = models.DateTimeField()
+
+    # @staticmethod
+    # def get_current_sprint_task(current_sprint_id: int):
+    #     tasks = Task.objects.all()
+    #     current_tasks = [task for task in tasks if task.sprint_id == current_sprint_id]
+    #     return current_tasks
 
 
 class Comment(models.Model):
@@ -43,6 +55,14 @@ class Comment(models.Model):
 
 
 class Sprint(models.Model):
-    project_id = models.IntegerField()
     date_of_start = models.DateTimeField()
     date_of_end = models.DateTimeField()
+
+    @staticmethod
+    def current_sprint():
+        sprints = Sprint.objects.all()
+        for sprint in sprints:
+            if sprint.date_of_start <= datetime.now() <= sprint.date_of_end:
+                return sprint
+            else:
+                return sprints[-1]

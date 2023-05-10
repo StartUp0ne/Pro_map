@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="limiter">
+        <table>
+            <thead>
+            <th>Задание</th>
+            <th>Проект</th>
+            <th>Статус</th>
+            <th>Оценка в story point</th>
+            </thead>
+            {% for task in tasks %}
+            <td>{{ task.title }}</td>
+            {% for project in projects %}
+                {% if task.project_id == project.id  %}
+                <td>{{ project.title }}</td>
+            {% endfor %}
+            <td>{{ task.status }}</td>
+            <td>{{ task.story_point }}</td>
+            {% endfor %}
+        </table>
+        <table>
+            <thead>
+            <th>Задание</th>
+            <th>Проект</th>
+            <th>Статус</th>
+            <th>Оценка в story point</th>
+            </thead>
+            {% for task in tasks %}
+            <td>{{ task.title }}</td>
+            {% for project in projects %}
+                {% if task.project_id == project.id  %}
+                <td>{{ project.title }}</td>
+            {% endfor %}
+            <td>{{ task.status }}</td>
+            <td>{{ task.story_point }}</td>
+            {% endfor %}
+        </table>
+    </div>
+
+{% endblock %}
