@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div class="limiter">
+    <p>
+      <label>Название</label><br>
+      <input type="text" name="title">
+    </p>
+    <p>
+      <label>Пояснение</label><br>
+      <input type="text" name="description">
+    </p>
+    <p>
+      <label>Статус</label><br>
+      <input type="text" name="status">
+    </p>
+    <p>
+      <label>Лидер проекта</label><br>
+      <select name="Users" size="5" autofocus>
+        <option>Выберите из списка</option>
+          {% for user in users %}
+            <option value="{{ user.id }}">{{ user.first_name + " " + user.last_name}}</option>
+          {% endfor %}
+      </select>
+    </p>
+
+    <input type="submit" name="" value="Сохранить изменения">
+</div>
+{% endblock %}

@@ -2,6 +2,40 @@
 
 {% block content %}
     <div class="limiter">
-
+        <form class="task" method="POST">
+        {% csrf_token %}
+        <p>
+          <label>Название</label><br>
+          <input type="text" name="title">
+        </p>
+        <p>
+          <label>Пояснение</label><br>
+          <input type="text" name="description">
+        </p>
+        <p>
+          <label>Исполнитель задачи</label><br>
+          <select name="Users" size="5" autofocus>
+            <option>Выберите из списка</option>
+              {% for user in users %}
+                <option value="{{ user.id }}">{{ user.first_name + " " + user.last_name}}</option>
+              {% endfor %}
+          </select>
+        </p>
+        <p>
+            <label>Статус</label><br>
+            select name="Users" size="5" autofocus>
+            <select name="Users" size="5" autofocus>
+                <option>Выберите из списка</option>
+                <option value="Готово">Готово</option>
+                <option value="На ревью">Готово</option>
+                <option value="В работе">Готово</option>
+            </select>
+        </p>
+        <p>
+            <label>Оценка в Story points</label><br>
+            <input type="text" name="status">
+        </p>
+        <input type="submit" name="" value="Сохранить">
+      </form>
     </div>
 {% endblock %}

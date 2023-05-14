@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <h1>Project Map</h1>
+    <div class="header">
+        <h1>Project Map</h1>
+    </div>
     <div class="limiter">
+        <h3>Задачи</h3>
         <table>
             <thead>
             <th>Задание</th>
@@ -19,23 +24,20 @@
             <td>{{ task.story_point }}</td>
             {% endfor %}
         </table>
+        <h3>Проекты</h3>
         <table>
             <thead>
-            <th>Задание</th>
-            <th>Проект</th>
+            <th>нызвание</th>
             <th>Статус</th>
-            <th>Оценка в story point</th>
+            <th>Глава</th>
             </thead>
-            {% for task in tasks %}
-            <td>{{ task.title }}</td>
             {% for project in projects %}
-                {% if task.project_id == project.id  %}
                 <td>{{ project.title }}</td>
-            {% endfor %}
-            <td>{{ task.status }}</td>
-            <td>{{ task.story_point }}</td>
+                <td>{{ project.status }}</td>
+                {% for user in users %}
+                    <td>{{ user.last_name }} {{ user.first_name }}</td>
+                {% endfor %}
             {% endfor %}
         </table>
     </div>
-
 {% endblock %}
