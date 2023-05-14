@@ -23,7 +23,7 @@ class Project(models.Model):
     manager_id = models.IntegerField()
     leader_id = models.IntegerField()
     date_of_creation = models.DateTimeField()
-    status = models.IntegerField()
+    status = models.CharField(max_length=10)
 
 
 class Task(models.Model):
@@ -40,18 +40,15 @@ class Task(models.Model):
     sprint_id = models.IntegerField()
     end_date = models.DateTimeField()
 
-    # @staticmethod
-    # def get_current_sprint_task(current_sprint_id: int):
-    #     tasks = Task.objects.all()
-    #     current_tasks = [task for task in tasks if task.sprint_id == current_sprint_id]
-    #     return current_tasks
-
 
 class Comment(models.Model):
     task_id = models.IntegerField()
     author_id = models.IntegerField()
     text = models.CharField(max_length=1000)
     date_of_creation = models.DateTimeField()
+
+    def __str__(self):
+        return self.text
 
 
 class Sprint(models.Model):
