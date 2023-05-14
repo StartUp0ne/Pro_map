@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import User, Project, Task, Comment, Sprint
-from passlib.hash import pbkdf2_sha256
+# from passlib.hash import pbkdf2_sha256
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 
 
@@ -15,7 +15,7 @@ def register(request):
         user.first_name = request.POST.get("first_name")
         user.middle_name = request.POST.get("middle_name")
         password = request.POST.get("password")
-        user.password = pbkdf2_sha256(password, rounds=10000, salt_size=20)
+        # user.password = pbkdf2_sha256(password, rounds=10000, salt_size=20)
         role = request.POST.get("role")
         icon = request.POST.get("icon")
         email = request.POST.get("email")
@@ -56,36 +56,49 @@ def logout(request):
 
 
 def main_view(request):
+    try:
+        user = request.session["user_id"]
+    except Exception:
+        return HttpResponseRedirect("")
+    current_user = User.objects.get(id=user)
+    users = User.objects.all()
     projects = Project.objects.all()
-    tasks = Task.get_current_sprint_task()
     current_sprint = Sprint.current_sprint()
-
+    tasks = Task.objects.get(sprint_id=current_sprint.id)
     return render(request, "index.html", {"projects": projects,
                                           "tasks": tasks,
-                                          "sprint": current_sprint})
+                                          "sprint": current_sprint,
+                                          "current_user": current_user,
+                                          "users": users})
 
 
 def project(request, project_id: int):
     try:
-        user = request.session['user_id']
+        user = request.session["user_id"]
     except Exception:
-        user = None
-    projects = Project.objects.get(id=project_id)
-    tasks = Task.objects.get(project_id=project_id)
+        return HttpResponseRedirect("")
+    current_project = Project.objects.get(id=project_id)
+    current_user = User.objects.get(id=user)
     sprint = Sprint.current_sprint()
-    return render(request, "project.html", {"projects": projects,
+    tasks = Task.objects.get(sprint_id=sprint.id)
+    users = User.object.all()
+    for user in users:
+        if user.id == current_project.leader_id:
+            leader = user
+    return render(request, "project.html", {"project": current_project,
+                                            "current_user": current_user,
                                             "tasks": tasks,
-                                            "sprint": sprint})
+                                            "leader": leader})
 
 
 def add_project(request):
     try:
         user = request.session["user_id"]
     except Exception:
-        user = None
         return HttpResponseRedirect("")
     user = User.objects.get(id=user)
     new_project = Project()
+    users = User.objects.all()
     if user.get_role() == "manager":
         if request.method == "POST":
             new_project.title = request.POST.get('title')
@@ -97,7 +110,7 @@ def add_project(request):
             new_project.save()
             return HttpResponseRedirect('/')
         else:
-            return render(request, 'create_project.html', {"project": new_project})
+            return render(request, 'create_project.html', {"project": new_project, "users":  users})
     else:
         HttpResponse()
 
@@ -152,13 +165,20 @@ def task(request, task_id: int):
     except Exception:
         user = None
         return HttpResponseRedirect('')
-    user = User.objects.get(id=user)
+    current_user = User.objects.get(id=user)
+    users = User.objects.all()
     current_task = Task.objects.get(task=task_id)
-    sprint = Sprint.current_sprint()
     comments = Comment.objects.get(task_id=task_id)
+    if request.method == "POST":
+        new_comment = Comment()
+        new_comment.text = request.POST.get('new_comment')
+        new_comment.date_of_creation = datetime.now()
+        new_comment.author_id = current_user.id
+        new_comment.task_id = current_task.id
+        new_comment.save()
     return render(request, "task.html", {"tasks": current_task,
-                                         "sprint": sprint,
-                                         "user": user,
+                                         "users": users,
+                                         "user": current_user,
                                          "comments": comments})
 
 
