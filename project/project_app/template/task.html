@@ -1,10 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block content %}
+    <div class="limiter">
+        <h3>Задача: {{ task.title }}</h3>
+        <p>Пояснение</p><br>
+        <p>{{ task.description }}</p>
+        <p>Статус: {{ task.description }}<p>
+        <p>story point: {{ task.story_point }}</p>
+        <div class="comment">
+            {% for comment in comments %}
+                {% for user in users %}
+                    {% if user.id == comment.author_id %}
+                        <p>{{ user.last_name }} {{ user.first_name }}</p>
+                    {% endif %}
+                {% endfor %}
+                <p>{{ comment }}</p>
+                <p>{{ comment.date_of_creation }}</p>
+            {% endfor %}
+        </div>
+    </div>
+    <form class="new_comment" method="POST">
+        {% csrf_token %}
+        <p>
+          <label>Новый комментарий</label><br>
+          <input type="text" name="new_comment">
+        </p>
+        <input type="submit" name="" value="Отправить">
+      </form>
+{% endblock %}
