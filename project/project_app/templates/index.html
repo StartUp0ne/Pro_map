@@ -1,11 +1,39 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Project Map</h1>
     <div class="header">
         <h1>Project Map</h1>
+        {% if current_user %}
+        <a href="logout/">Выйти</a>
+        {% endif %}
     </div>
     <div class="limiter">
+        {% if current_user == None %}
+        <form class="login" method="POST">
+            {% csrf_token %}
+            <p>
+              <label>Введите логин</label><br>
+              <input type="text" name="login" value="">
+            </p>
+            <p>
+              <label>Введите пароль</label><br>
+              <input type="text" name="password" value="">
+            </p>
+            <input type="submit" name="" value="Войти">
+        </form>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <a href="register/">Регистрация</a>
+
+        {% endif %}
+        {% if current_user %}
         <h3>Задачи</h3>
         <table>
             <thead>
@@ -19,6 +47,7 @@
             {% for project in projects %}
                 {% if task.project_id == project.id  %}
                 <td>{{ project.title }}</td>
+                {% endif %}
             {% endfor %}
             <td>{{ task.status }}</td>
             <td>{{ task.story_point }}</td>
@@ -39,5 +68,6 @@
                 {% endfor %}
             {% endfor %}
         </table>
+        {% endif %}
     </div>
 {% endblock %}

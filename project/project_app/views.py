@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import User, Project, Task, Comment, Sprint
-# from passlib.hash import pbkdf2_sha256
+from hashlib import pbkdf2_hmac
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 
 
@@ -15,9 +15,10 @@ def register(request):
         user.first_name = request.POST.get("first_name")
         user.middle_name = request.POST.get("middle_name")
         password = request.POST.get("password")
-        # user.password = pbkdf2_sha256(password, rounds=10000, salt_size=20)
-        role = request.POST.get("role")
-        icon = request.POST.get("icon")
+        user.password = str(pbkdf2_hmac(hash_name="sha256",
+                                        password=password.encode('utf-8'),
+                                        salt=b'bad salt'*2,
+                                        iterations=10000))
         email = request.POST.get("email")
         login = request.POST.get("login")
         for u in users:
@@ -32,19 +33,7 @@ def register(request):
         user.save()
         return HttpResponseRedirect("/")
     else:
-        return render(request, "register.html", {"user", user})
-
-
-def loginform(request):
-    if request.method == "POST":
-        try:
-            user = User.objects.get(username=request.POST['login'])
-            if pbkdf2_sha256.vetify(user.password, request.POST['password']):
-                request.session['user_id'] = user.id
-                return HttpResponseRedirect("/")
-        except user.DoesNotExist:
-            messages.error(request, "Пользователь с таким логином не найден")
-    return render(request, "login.html", None)
+        return render(request, "register.html", None)
 
 
 def logout(request):
@@ -52,21 +41,36 @@ def logout(request):
         del request.session['user_id']
     except KeyError:
         pass
-    return HttpResponse("You're logged out.")
+    return HttpResponseRedirect("/")
 
 
 def main_view(request):
     try:
         user = request.session["user_id"]
     except Exception:
-        return HttpResponseRedirect("")
+        if request.method == "POST":
+            try:
+                user = User.objects.get(login=request.POST['login'])
+                password = str(pbkdf2_hmac(hash_name="sha256",
+                                           password=request.POST['password'].encode('utf-8'),
+                                           salt=b'bad salt'*2,
+                                           iterations=10000))
+                if user.password == password:
+                    request.session['user_id'] = user.id
+                    return HttpResponseRedirect("/")
+                else:
+                    messages.error(request, "Неверный пароль")
+            except User.DoesNotExist:
+                messages.error(request, "Пользователь с таким логином не найден")
+        return render(request, "index.html", None)
+
     current_user = User.objects.get(id=user)
     users = User.objects.all()
     projects = Project.objects.all()
     current_sprint = Sprint.current_sprint()
-    tasks = Task.objects.get(sprint_id=current_sprint.id)
+    # tasks = Task.objects.get(sprint_id=current_sprint.id)
     return render(request, "index.html", {"projects": projects,
-                                          "tasks": tasks,
+                                          # "tasks": tasks,
                                           "sprint": current_sprint,
                                           "current_user": current_user,
                                           "users": users})

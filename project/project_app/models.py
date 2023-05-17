@@ -9,8 +9,8 @@ class User(models.Model):
     email = models.CharField(max_length=30)
     login = models.CharField(max_length=30)
     password = models.CharField(max_length=256)
-    role = models.IntegerField()
-    icon = models.ImageField()
+    role = models.IntegerField(default=3)
+    icon = models.ImageField(default="default-user.png")
 
     def get_role(self):
         role_dict = {1: "manager", 2: "project_leader", 3: "worker"}
