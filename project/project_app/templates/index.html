@@ -8,7 +8,7 @@
         {% endif %}
     </div>
     <div class="limiter">
-        {% if current_user == None %}
+    {% if current_user == None %}
         <form class="login" method="POST">
             {% csrf_token %}
             <p>
@@ -31,10 +31,11 @@
         </ul>
         {% endif %}
         <a href="register/">Регистрация</a>
+    {% endif %}
 
-        {% endif %}
-        {% if current_user %}
-        <h3>Задачи</h3>
+    {% if current_user %}
+        {% if current_user.get_role != "manager" %}
+        <h3>Задачи на вас</h3>
         <table>
             <thead>
             <th>Задание</th>
@@ -53,10 +54,33 @@
             <td>{{ task.story_point }}</td>
             {% endfor %}
         </table>
-        <h3>Проекты</h3>
+        {% endif %}
+
+        {% if current_user.get_role == "project_leader" %}
+        <h3>Ваши проекты</h3>
         <table>
             <thead>
-            <th>нызвание</th>
+            <th>Название</th>
+            <th>Статус</th>
+            </thead>
+            {% for project in projects %}
+                {% if project.leader_id == current_user.id %}
+                <td>{{ project.title }}</td>
+                <td>{{ project.status }}</td>
+                <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
+                {% endif %}
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if current_user.get_role == "manager"%}
+        <h3>Проекты</h3>
+            {% if current_user.get_role == "manager" %}
+                <a href="add_project">Создать новый проект</a>
+            {% endif %}
+        <table>
+            <thead>
+            <th>Название</th>
             <th>Статус</th>
             <th>Глава</th>
             </thead>
@@ -64,10 +88,14 @@
                 <td>{{ project.title }}</td>
                 <td>{{ project.status }}</td>
                 {% for user in users %}
+                    {% if project.leader_id == user.id %}
                     <td>{{ user.last_name }} {{ user.first_name }}</td>
+                    {% endif %}
                 {% endfor %}
+                <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
             {% endfor %}
         </table>
         {% endif %}
+    {% endif %}
     </div>
 {% endblock %}

@@ -14,28 +14,49 @@
         </p>
         <p>
           <label>Исполнитель задачи</label><br>
-          <select name="Users" size="5" autofocus>
+          <select name="executor">
             <option>Выберите из списка</option>
               {% for user in users %}
-                <option value="{{ user.id }}">{{ user.first_name + " " + user.last_name}}</option>
+                {% if user.get_role != "manager" %}
+                <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name}}</option>
+                {% endif %}
               {% endfor %}
           </select>
         </p>
         <p>
             <label>Статус</label><br>
-            select name="Users" size="5" autofocus>
-            <select name="Users" size="5" autofocus>
+            <select name="status">
                 <option>Выберите из списка</option>
-                <option value="Готово">Готово</option>
-                <option value="На ревью">Готово</option>
-                <option value="В работе">Готово</option>
+                <option value="wait">Ожидает начала</option>
+                <option value="work">В работе</option>
+                <option value="review">На ревью</option>
+                <option value="Done">Готово</option>
             </select>
         </p>
         <p>
             <label>Оценка в Story points</label><br>
-            <input type="text" name="status">
+            <input type="number" name="status">
         </p>
-        <input type="submit" name="" value="Сохранить">
+        <p>
+          <label>Спринт</label><br>
+          <select name="executor">
+            <option>Выберите спринт из списка</option>
+              {% for sprint in sprints %}
+                <option value="{{ sprint.id }}">{{ sprint.date_of_start.date }} - {{ sprint.date_of_end.date }}</option>
+              {% endfor %}
+          </select>
+        </p>
+        <input type="submit" name="" value="Создать">
       </form>
+      <a href="#" onclick="history.back();return false;">Отмена</a>
+      {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+              {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+      {% endif %}
     </div>
 {% endblock %}

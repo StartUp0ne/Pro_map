@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="limiter">
+    <h2>Проект: {{ project.title }}</h2>
+    <p>Описание:</p>
+    <p>{{ project.description }}</p>
+    <p>Глава проекта: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
+    <p>Текущее состояние проекта: {{ project.status }}</p>
+
+    {% if current_user.get_role != "worker" %}
+    <a href="add_task/">Создать задачу</a>
+        {% for task in tasks %}
+        <div>
+            <p>Задача: <a href="task/<int:task_id>">{{ task.title }}</a></p><br>
+            <p>Оценка: {{ task.story_point }}</p><br>
+            <p>Статус: {{ task.status }}</p>
+        </div>
+        {% endfor %}
+    <a href="edit_project/">Редактировать проект</a>
+    {% endif %}
+</div>
+{% endblock %}

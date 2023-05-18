@@ -10,6 +10,7 @@ class User(models.Model):
     login = models.CharField(max_length=30)
     password = models.CharField(max_length=256)
     role = models.IntegerField(default=3)
+    project_id = models.IntegerField(default=0)
     icon = models.ImageField(default="default-user.png")
 
     def get_role(self):
@@ -23,7 +24,7 @@ class Project(models.Model):
     manager_id = models.IntegerField()
     leader_id = models.IntegerField()
     date_of_creation = models.DateTimeField()
-    status = models.CharField(max_length=10)
+    status = models.CharField(max_length=15)
 
 
 class Task(models.Model):
@@ -35,6 +36,7 @@ class Task(models.Model):
     reviewer_id = models.IntegerField()
     date_of_creation = models.DateTimeField()
     status = models.IntegerField()
+    date_of_start = models.DateTimeField()
     story_point = models.IntegerField()
     date_of_completion = models.DateTimeField()
     sprint_id = models.IntegerField()
@@ -63,3 +65,13 @@ class Sprint(models.Model):
                 return sprint
             else:
                 return sprints[-1]
+
+    def next_sprint(self):
+        sprints = Sprint.objects.all()
+        cur_sprint = self.current_sprint()
+        next_sprints = [cur_sprint]
+        for sprint in sprints:
+            if sprint.date_of_start >= cur_sprint:
+                next_sprints.append(sprint)
+        return next_sprints
+
