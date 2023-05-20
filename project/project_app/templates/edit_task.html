@@ -6,34 +6,47 @@
         {% csrf_token %}
         <p>
           <label>Название</label><br>
-          <input type="text" name="title">
+          <input type="text" name="title" value="{{ task.title }}">
         </p>
         <p>
           <label>Пояснение</label><br>
-          <input type="text" name="description">
+          <input type="text" name="description" value="{{ task.description }}">
         </p>
         <p>
           <label>Исполнитель задачи</label><br>
-          <select name="Users" size="5" autofocus>
-            <option>Выберите из списка</option>
+          <select name="executor" >
+            <option value="{{ task.executor_id }}">Выберите из списка</option>
               {% for user in users %}
-                <option value="{{ user.id }}">{{ user.first_name + " " + user.last_name}}</option>
+                {% if user.get_role != "manager" %}
+                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                {% endif %}
+              {% endfor %}
+          </select>
+        </p>
+        <p>
+          <label>Ревьюер задачи</label><br>
+          <select name="reviewer">
+            <option value="{{ task.reviewer_id }}">Выберите из списка</option>
+              {% for user in users %}
+                {% if user.get_role != "manager" %}
+                <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name }}</option>
+                {% endif %}
               {% endfor %}
           </select>
         </p>
         <p>
             <label>Статус</label><br>
-            select name="Users" size="5" autofocus>
-            <select name="Users" size="5" autofocus>
-                <option>Выберите из списка</option>
-                <option value="Готово">Готово</option>
-                <option value="На ревью">Готово</option>
-                <option value="В работе">Готово</option>
+            <select name="status">
+                <option value="{{ task.status }}">Выберите из списка</option>
+                <option value="wait">Ожидает начала</option>
+                <option value="work">В работе</option>
+                <option value="review">На ревью</option>
+                <option value="Done">Готово</option>
             </select>
         </p>
         <p>
             <label>Оценка в Story points</label><br>
-            <input type="text" name="status">
+            <input type="number" value="{{ task.story_point }}" >
         </p>
         <input type="submit" name="" value="Сохранить изменения">
     </form>

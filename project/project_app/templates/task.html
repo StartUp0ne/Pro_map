@@ -3,10 +3,22 @@
 {% block content %}
     <div class="limiter">
         <h3>Задача: {{ task.title }}</h3>
-        <p>Пояснение</p><br>
+        <p>Пояснение</p>
         <p>{{ task.description }}</p>
-        <p>Статус: {{ task.description }}<p>
+        <p>Статус: {{ task.status }}<p>
         <p>story point: {{ task.story_point }}</p>
+        {% for user in users %}
+            {% if user.id == task.executor_id %}
+                <p>Исполнитель: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+            {% endif %}
+            {% if user.id == task.reviewer_id %}
+                <p>Ревьюер: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+            {% endif %}
+        {% endfor %}
+
+        {% if current_user.get_role != "worker" %}
+        <p><a href="edit_task/">Редактировать задачу</a></p>
+        {% endif %}
         <div class="comment">
             {% for comment in comments %}
                 {% for user in users %}
@@ -16,10 +28,12 @@
                 {% endfor %}
                 <p>{{ comment }}</p>
                 <p>{{ comment.date_of_creation }}</p>
+                <p><a href="delete_comment/{{ comment.id }}/">Удалить</a></p>
             {% endfor %}
+
         </div>
     </div>
-    <form class="new_comment" method="POST">
+    <form class="new_comment" method="post">
         {% csrf_token %}
         <p>
           <label>Новый комментарий</label><br>

@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+import dateutil.parser
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from .models import User, Project, Task, Comment, Sprint
 from hashlib import pbkdf2_hmac
 from django.http import HttpResponseRedirect, HttpResponseNotFound
@@ -68,11 +69,21 @@ def main_view(request):
     current_user = User.objects.get(id=user)
     users = User.objects.all()
     projects = Project.objects.all()
-    current_sprint = Sprint.current_sprint()
-    if current_sprint is None:
-        tasks = []
-    else:
-        tasks = Task.objects.get(sprint_id=current_sprint.id)
+    sprints = Sprint.objects.all()
+    current_sprint = None
+    for sprint in sprints:
+        if sprint.date_of_start <= datetime.now(timezone.utc) <= sprint.date_of_end:
+            current_sprint = sprint
+    tasks = Task.objects.all()
+
+    if current_user.get_role() == "manager":
+        if request.method == "POST":
+            sprint = Sprint()
+            sprint.date_of_start = dateutil.parser.parse(request.GET.get("start"), ignoretz=True, fuzzy=True)
+            days = int(request.GET.get("days"))
+            sprint.date_of_end = sprint.date_of_start + timedelta(days=days)
+            sprint.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     return render(request, "index.html", {"projects": projects,
                                           "tasks": tasks,
                                           "sprint": current_sprint,
@@ -85,23 +96,16 @@ def project(request, project_id: int):
         user = request.session["user_id"]
     except Exception:
         return HttpResponseRedirect("/")
-    try:
-        current_project = Project.objects.get(id=project_id)
-        current_user = User.objects.get(id=user)
-        sprint = Sprint.current_sprint()
-        tasks = Task.objects.get(sprint_id=sprint.id)
-        users = User.object.all()
-        leader = User.objects.get(id=current_project.leader_id)
-        return render(request, "project.html", {"project": current_project,
-                                                "current_user": current_user,
-                                                "users": users,
-                                                "tasks": tasks,
-                                                "leader": leader})
-    except Exception:
-        current_project = Project.objects.get(id=project_id)
-        leader = User.objects.get(id=current_project.leader_id)
-        return render(request, "project.html", {"project": current_project,
-                                                "leader": leader})
+    current_project = Project.objects.get(id=project_id)
+    current_user = User.objects.get(id=user)
+    tasks = Task.objects.all()
+    users = User.objects.all()
+    leader = User.objects.get(id=current_project.leader_id)
+    return render(request, "project.html", {"project": current_project,
+                                            "current_user": current_user,
+                                            "users": users,
+                                            "tasks": tasks,
+                                            "leader": leader})
 
 
 def add_project(request):
@@ -129,7 +133,7 @@ def add_project(request):
             new_project.status = request.POST.get('status')
             logging.error(f"Статус: {new_project.status}")
             new_project.save()
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect("/")
         else:
             return render(request, 'create_project.html', {"project": new_project, "users":  users})
     else:
@@ -173,7 +177,7 @@ def edit_project(request, project_id: int):
             current_project.status = request.POST.get('status')
             current_project.leader_id = request.POST.get('leader_id')
             current_project.save()
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         else:
             return render(request, "edit_project.html", {"user": user,
                                                          "project": current_project})
@@ -181,7 +185,7 @@ def edit_project(request, project_id: int):
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
 
 
-def task(request, task_id: int):
+def task(request, project_id: int, task_id: int):
     try:
         user = request.session['user_id']
     except Exception:
@@ -189,8 +193,9 @@ def task(request, task_id: int):
         return HttpResponseRedirect('')
     current_user = User.objects.get(id=user)
     users = User.objects.all()
-    current_task = Task.objects.get(task=task_id)
-    comments = Comment.objects.get(task_id=task_id)
+    current_task = Task.objects.get(id=task_id)
+    comments = Comment.objects.all()
+
     if request.method == "POST":
         new_comment = Comment()
         new_comment.text = request.POST.get('new_comment')
@@ -198,7 +203,8 @@ def task(request, task_id: int):
         new_comment.author_id = current_user.id
         new_comment.task_id = current_task.id
         new_comment.save()
-    return render(request, "task.html", {"tasks": current_task,
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return render(request, "task.html", {"task": current_task,
                                          "users": users,
                                          "user": current_user,
                                          "comments": comments})
@@ -214,24 +220,26 @@ def add_task(request, project_id: int):
     current_user = User.objects.get(id=user)
     users = User.objects.all()
     current_project = Project.objects.get(id=project_id)
-    sprints = Sprint.next_sprint
+    sprints = Sprint.objects.all()
+    current_sprint = None
+    for sprint in sprints:
+        if sprint.date_of_start <= datetime.now(timezone.utc) <= sprint.date_of_end:
+            current_sprint = sprint
     new_task = Task()
     if current_user.get_role() == "manager" or current_user.get_role() == "project_leader":
         if request.method == "POST":
-            try:
-                new_task.title = request.POST.get('title')
-                new_task.description = request.POST.get('description')
-                new_task.project_id = project_id
-                new_task.lead_id = current_project.leader_id
-                new_task.executor_id = request.POST.get('executor')
-                new_task.date_of_creation = datetime.now()
-                new_task.status = request.POST.get('status')
-                new_task.story_point = request.POST.get('story_point')
-                new_task.sprint_id = request.POST.get('sprint')
-                new_task.save()
-                return HttpResponseRedirect("/")
-            except Exception:
-                messages.error(request, "Заполните все поля")
+            new_task.title = request.POST.get('title')
+            new_task.description = request.POST.get('description')
+            new_task.project_id = project_id
+            new_task.lead_id = current_project.leader_id
+            new_task.executor_id = request.POST.get('executor')
+            new_task.reviewer_id = request.POST.get('reviewer')
+            new_task.date_of_creation = datetime.now()
+            new_task.status = request.POST.get('status')
+            new_task.story_point = request.POST.get('story_point')
+            new_task.sprint_id = request.POST.get('sprint')
+            new_task.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return render(request, "create_task.html", {"current_user": current_user,
                                                     "project": current_project,
                                                     "sprints": sprints,
@@ -241,7 +249,7 @@ def add_task(request, project_id: int):
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
 
 
-def edit_task(request, task_id: int):
+def edit_task(request, project_id: int, task_id: int):
     try:
         user = request.session['user_id']
     except Exception:
@@ -253,41 +261,35 @@ def edit_task(request, task_id: int):
         return HttpResponseNotFound("<h2>This task not found</h2>")
     users = User.objects.all()
     current_user = User.objects.get(id=user)
-    if user.get_role() == "manager" or user.get_role() == "project_leader":
+    if current_user.get_role() == "manager" or current_user.get_role() == "project_leader":
         if request.method == "POST":
             current_task.title = request.POST.get('title')
             current_task.description = request.POST.get('description')
-            current_task.reviewer_id = request.POST.get('reviewer_id')
-            current_task.executor_id = request.POST.get('executor_id')
+            current_task.reviewer_id = request.POST.get('reviewer')
+            current_task.executor_id = request.POST.get('executor')
             current_task.status = request.POST.get('status')
-            if current_task.status == "work":
-                current_task.date_of_start = datetime.now()
-                current_task.story_point = request.POST.get('story_point')
-                current_task.end_date = current_task.date_of_start + timedelta(days=current_task.story_point)
-            elif current_task.status == "Done":
-                current_task.end_date = None
-            current_task.sprint_id = request.POST.get('sprint')
             current_task.save()
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         else:
-            return render(request, "add_task.html", {"user": user,
-                                                     "task": current_task})
+            return render(request, "edit_task.html", {"current_user": current_user,
+                                                      "users": users,
+                                                      "task": current_task})
     elif user.get_role() == "worker":
         if request.method == "POST":
             current_task.reviewer_id = request.POST.get('reviewer_id')
             current_task.status = request.POST.get('status')
             current_task.story_point = request.POST.get('story_point')
-            current_task.end_date = current_task.date_of_creation + timedelta(days=current_task.story_point)
             current_task.save()
             return HttpResponseRedirect("/")
         else:
-            return render(request, "add_task.html", {"user": user,
-                                                     "task": current_task})
+            return render(request, "edit_task.html", {"user": current_user,
+                                                      "users": users,
+                                                      "task": current_task})
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
 
 
-def delete_task(request, task_id: int):
+def delete_task(request, project_id: int, task_id: int):
     try:
         user = request.session['user_id']
     except Exception:
@@ -298,63 +300,14 @@ def delete_task(request, task_id: int):
         try:
             current_task = Task.objects.get(id=task_id)
             current_task.delete()
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         except Task.DoesNotExist:
             return HttpResponseNotFound("<h2>This task not found</h2>")
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
 
 
-def add_comment(request, task_id: int):
-    try:
-        user = request.session['user_id']
-    except Exception:
-        user = None
-        return HttpResponseRedirect("")
-    new_comment = Comment()
-    try:
-        current_task = Task.objects.get(id=task_id)
-    except Task.DoesNotExist:
-        return HttpResponseNotFound("<h2>Task not found</h2>")
-    sprint = Sprint.current_sprint()
-    if request.method == "POST":
-        new_comment.task_id = task_id
-        new_comment.author_id = user.id
-        new_comment.text = request.POST.get('text')
-        new_comment.date_of_creation = datetime.now()
-        new_comment.save()
-        return HttpResponseRedirect("/")
-    else:
-        return render(request, 'task.html', {"tasks": current_task,
-                                             "sprint": sprint,
-                                             "user": user,
-                                             "comments": new_comment})
-
-
-def edit_comment(request, comment_id: int):
-    try:
-        user = request.session['user_id']
-    except Exception:
-        user = None
-        return HttpResponseRedirect("")
-    try:
-        current_comment = Comment.objects.get(id=comment_id)
-    except Comment.DoesNotExist:
-        return HttpResponseRedirect("/")
-    current_task = Task.objects.get(id=current_comment.task_id)
-    sprint = Sprint.objects.get(id=current_task.sprint_id)
-    if request.method == "POST":
-        current_comment.text = request.POST.get('text')
-        current_comment.save()
-        return HttpResponseRedirect("/")
-    else:
-        return render(request, 'task.html', {"tasks": current_task,
-                                             "sprint": sprint,
-                                             "user": user,
-                                             "comments": current_task})
-
-
-def delete_comment(request, comment_id: int):
+def delete_comment(request, project_id: int, task_id: int, comment_id: int):
     try:
         user = request.session['user_id']
     except Exception:
@@ -367,25 +320,7 @@ def delete_comment(request, comment_id: int):
     user = User.objects.get(id=user)
     if user.get_role() == "manager" or user.get_role() == "project_leader" or user.id == current_comment.author_id:
         current_comment.delete()
-        return HttpResponseRedirect("/")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
 
-
-def declare_new_sprint(request):
-    try:
-        user = request.session['user_id']
-    except Exception:
-        user = None
-        return HttpResponseRedirect("")
-    user = User.objects.get(id=user)
-    new_sprint = Sprint()
-    if user.get_role() == "manager" or user.get_role() == "project_leader":
-        if request.method == "POST":
-            new_sprint.date_of_start = request.POST.get('start')
-            new_sprint.date_of_end = request.POST.get('end')
-            new_sprint.save()
-            return HttpResponseRedirect('')
-        else:
-            return render(request, 'declare_sprint.html', {"user": user,
-                                                           "sprint": new_sprint})

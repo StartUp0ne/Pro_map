@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container-xxl">
     <div class="header">
         <h1>Project Map</h1>
         {% if current_user %}
         <a href="logout/">Выйти</a>
         {% endif %}
     </div>
-    <div class="limiter">
     {% if current_user == None %}
         <form class="login" method="POST">
             {% csrf_token %}
@@ -44,14 +44,43 @@
             <th>Оценка в story point</th>
             </thead>
             {% for task in tasks %}
-            <td>{{ task.title }}</td>
-            {% for project in projects %}
-                {% if task.project_id == project.id  %}
-                <td>{{ project.title }}</td>
+                {% if task.executor_id == current_user.id %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    {% for project in projects %}
+                        {% if task.project_id == project.id  %}
+                            <td>{{ project.title }}</td>
+                        {% endif %}
+                    {% endfor %}
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.story_point }}</td>
+                </tr>
                 {% endif %}
+
             {% endfor %}
-            <td>{{ task.status }}</td>
-            <td>{{ task.story_point }}</td>
+        </table>
+
+        <h3>Задачи для ревью</h3>
+        <table>
+            <thead>
+            <th>Задание</th>
+            <th>Проект</th>
+            <th>Статус</th>
+            <th>Оценка в story point</th>
+            </thead>
+            {% for task in tasks %}
+                {% if task.reviewer_id == current_user.id %}
+                <tr>
+                <td>{{ task.title }}</td>
+                {% for project in projects %}
+                    {% if task.project_id == project.id  %}
+                        <td>{{ project.title }}</td>
+                    {% endif %}
+                {% endfor %}
+                <td>{{ task.status }}</td>
+                <td>{{ task.story_point }}</td>
+                </tr>
+                {% endif %}
             {% endfor %}
         </table>
         {% endif %}
@@ -65,9 +94,11 @@
             </thead>
             {% for project in projects %}
                 {% if project.leader_id == current_user.id %}
+                <tr>
                 <td>{{ project.title }}</td>
                 <td>{{ project.status }}</td>
                 <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
+                </tr>
                 {% endif %}
             {% endfor %}
         </table>
@@ -85,6 +116,7 @@
             <th>Глава</th>
             </thead>
             {% for project in projects %}
+                <tr>
                 <td>{{ project.title }}</td>
                 <td>{{ project.status }}</td>
                 {% for user in users %}
@@ -93,9 +125,31 @@
                     {% endif %}
                 {% endfor %}
                 <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
+                </tr>
             {% endfor %}
         </table>
+        <div class="sprint">
+            <p>Текущий спринт</p>
+            {% if not sprint %}
+                <p>Спринт не объявен</p>
+            {% else %}
+            <p>{{ sprint.date_of_start.date }} - {{ sprint.date_of_end.date }}</p>
+            {% endif %}
+            <p>Объявить спринт</p>
+            <form class="sprint_form" method="post">
+                {% csrf_token %}
+                <p>
+                    <label>Дата начала спринта</label><br>
+                    <input type="date" name="start" required>
+                </p>
+                <p>
+                    <label>Количество дней в спринте</label><br>
+                    <input type="number" name="days" required>
+                </p>
+                <input type="submit" name="" value="Объявить новый спринт">
+            </form>
+        </div>
         {% endif %}
     {% endif %}
-    </div>
+</div>
 {% endblock %}

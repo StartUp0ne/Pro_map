@@ -6,16 +6,27 @@
         {% csrf_token %}
         <p>
           <label>Название</label><br>
-          <input type="text" name="title">
+          <input type="text" name="title" ">
         </p>
         <p>
           <label>Пояснение</label><br>
-          <input type="text" name="description">
+          <input type="text" name="description" value="{{ task.description }}">
         </p>
         <p>
           <label>Исполнитель задачи</label><br>
           <select name="executor">
-            <option>Выберите из списка</option>
+            <option value="{{ task.executor_id }}">Выберите из списка</option>
+              {% for user in users %}
+                {% if user.get_role != "manager" %}
+                <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name}}</option>
+                {% endif %}
+              {% endfor %}
+          </select>
+        </p>
+        <p>
+          <label>Ревьюер задачи</label><br>
+          <select name="reviewer">
+            <option value="{{ 0 }}">Выберите из списка</option>
               {% for user in users %}
                 {% if user.get_role != "manager" %}
                 <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name}}</option>
@@ -26,7 +37,7 @@
         <p>
             <label>Статус</label><br>
             <select name="status">
-                <option>Выберите из списка</option>
+                <option value="{{ task.status }}" >Выберите из списка</option>
                 <option value="wait">Ожидает начала</option>
                 <option value="work">В работе</option>
                 <option value="review">На ревью</option>
@@ -35,11 +46,11 @@
         </p>
         <p>
             <label>Оценка в Story points</label><br>
-            <input type="number" name="status">
+            <input type="number" name="story_point">
         </p>
         <p>
           <label>Спринт</label><br>
-          <select name="executor">
+          <select name="sprint">
             <option>Выберите спринт из списка</option>
               {% for sprint in sprints %}
                 <option value="{{ sprint.id }}">{{ sprint.date_of_start.date }} - {{ sprint.date_of_end.date }}</option>
@@ -49,14 +60,5 @@
         <input type="submit" name="" value="Создать">
       </form>
       <a href="#" onclick="history.back();return false;">Отмена</a>
-      {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
-              {{ message }}
-            </li>
-            {% endfor %}
-        </ul>
-      {% endif %}
     </div>
 {% endblock %}

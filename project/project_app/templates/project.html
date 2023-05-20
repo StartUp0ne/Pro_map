@@ -5,19 +5,37 @@
     <h2>Проект: {{ project.title }}</h2>
     <p>Описание:</p>
     <p>{{ project.description }}</p>
-    <p>Глава проекта: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
     <p>Текущее состояние проекта: {{ project.status }}</p>
 
-    {% if current_user.get_role != "worker" %}
-    <a href="add_task/">Создать задачу</a>
-        {% for task in tasks %}
-        <div>
-            <p>Задача: <a href="task/<int:task_id>">{{ task.title }}</a></p><br>
-            <p>Оценка: {{ task.story_point }}</p><br>
-            <p>Статус: {{ task.status }}</p>
-        </div>
+
+    <div class="workers">
+        <h3>Участники проекта</h3>
+        <p>Лидер: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
+        {% for user in users %}
+            {% if user.project_id == project.id %}
+            <p>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+            {% endif %}
         {% endfor %}
+    </div>
+    <div>
+        <h3>Текущие задачи</h3>
+        {% if current_user.get_role != "worker" %}
+            {% for task in tasks %}
+            {% if task.project_id == project.id %}
+            <div>
+                <p>Задача: <a href="task/{{ task.id }}/">{{ task.title }}</a></p><br>
+                <p>Оценка: {{ task.story_point }}</p><br>
+                <p>Статус: {{ task.status }}</p>
+                <p><a href="delete_task/{{ task.id }}/">Удалить задачу</a></p>
+            </div>
+            {% endif %}
+            {% endfor %}
+        {% endif %}
+        <a href="add_task/">Создать новую задачу</a>
+    </div>
+    {% if current_user.get_role != "worker" %}
     <a href="edit_project/">Редактировать проект</a>
+    <a href="delete_project/">Удалить проект</a>
     {% endif %}
 </div>
 {% endblock %}

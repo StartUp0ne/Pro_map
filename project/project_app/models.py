@@ -35,12 +35,9 @@ class Task(models.Model):
     lead_id = models.IntegerField()
     reviewer_id = models.IntegerField()
     date_of_creation = models.DateTimeField()
-    status = models.IntegerField()
-    date_of_start = models.DateTimeField()
+    status = models.CharField(max_length=15)
     story_point = models.IntegerField()
-    date_of_completion = models.DateTimeField()
     sprint_id = models.IntegerField()
-    end_date = models.DateTimeField()
 
 
 class Comment(models.Model):
@@ -56,22 +53,4 @@ class Comment(models.Model):
 class Sprint(models.Model):
     date_of_start = models.DateTimeField()
     date_of_end = models.DateTimeField()
-
-    @staticmethod
-    def current_sprint():
-        sprints = Sprint.objects.all()
-        for sprint in sprints:
-            if sprint.date_of_start <= datetime.now() <= sprint.date_of_end:
-                return sprint
-            else:
-                return sprints[-1]
-
-    def next_sprint(self):
-        sprints = Sprint.objects.all()
-        cur_sprint = self.current_sprint()
-        next_sprints = [cur_sprint]
-        for sprint in sprints:
-            if sprint.date_of_start >= cur_sprint:
-                next_sprints.append(sprint)
-        return next_sprints
 
