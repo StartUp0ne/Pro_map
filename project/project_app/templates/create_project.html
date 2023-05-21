@@ -1,41 +1,62 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-    <div class="limiter">
-        <form class="Project" method="POST">
-        {% csrf_token %}
-        <h2>Новый проект</h2>
-        <p>
-          <label>Название</label><br>
-          <input type="text" name="title">
-        </p>
-        <p>
-          <label>Пояснение</label><br>
-          <input type="text" name="description">
-        </p>
-        <p>
-          <label>Статус</label><br>
-          <select name="status">
-              <option>Выберите из списка</option>
-              <option value="info">На стадии сбора информации</option>
-              <option value="planning">На стадии планирования</option>
-              <option value="development">В разработке</option>
-              <option value="release">Готов к выпуску</option>
-          </select>
-        </p>
-        <p>
-          <label>Лидер проекта</label><br>
-          <select name="leader_id">
-              <option>Выберите из списка</option>
-              {% for user in users %}
-                {% if user.get_role != "manager" %}
-                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name}}</option>
-                {% endif %}
-              {% endfor %}
-          </select>
-        </p>
-        <input type="submit" name="" value="Создать">
-      </form>
-      <a href="/">Отмена</a>
+<div class="content">
+    <header class="header">
+        <img class="logo" src="{% static 'image/logo.png' %}">
+        <form action="logout/" >
+            <button>Выйти</button>
+        </form>
+    </header>
+    <div class="row custom_row">
+        <div class="col-6 edit_project">
+            <form method="POST">
+            {% csrf_token %}
+            <h2>Новый проект</h2>
+            <p>
+              <label>Название</label><br>
+              <input type="text" name="title">
+            </p>
+            <p>
+              <label>Пояснение</label><br>
+              <input type="text" name="description">
+            </p>
+            <p>
+              <label>Статус</label><br>
+              <select name="status">
+                  <option>Выберите из списка</option>
+                  <option value="info">На стадии сбора информации</option>
+                  <option value="planning">На стадии планирования</option>
+                  <option value="development">В разработке</option>
+                  <option value="release">Готов к выпуску</option>
+              </select>
+            </p>
+            <p>
+              <label>Глава проекта</label><br>
+              <select name="leader_id">
+                  <option>Выберите из списка</option>
+                  {% for user in users %}
+                    {% if user.get_role != "manager" %}
+                    <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name}}</option>
+                    {% endif %}
+                  {% endfor %}
+              </select>
+            </p>
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                  {{ message }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <input type="submit" name="" value="Создать">
+            </form>
+            <form action="#" class="custom_button_back">
+                <button onclick="history.back();return false;">Назад</button>
+            </form>
+        </div>
     </div>
+</div>
 {% endblock %}

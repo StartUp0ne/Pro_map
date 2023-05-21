@@ -19,7 +19,7 @@ class User(models.Model):
 
 
 class Project(models.Model):
-    title = models.CharField(max_length=20)
+    title = models.CharField(max_length=30)
     description = models.CharField(max_length=3000)
     manager_id = models.IntegerField()
     leader_id = models.IntegerField()
@@ -28,7 +28,7 @@ class Project(models.Model):
 
 
 class Task(models.Model):
-    title = models.CharField(max_length=20)
+    title = models.CharField(max_length=30)
     description = models.CharField(max_length=3000)
     project_id = models.IntegerField()
     executor_id = models.IntegerField()

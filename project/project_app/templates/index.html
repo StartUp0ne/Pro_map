@@ -1,155 +1,231 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="container-xxl">
-    <div class="header">
-        <h1>Project Map</h1>
-        {% if current_user %}
-        <a href="logout/">Выйти</a>
-        {% endif %}
+<div class="content">
+{% if current_user == None %}
+    <div class="login_blok">
+        <img class="col-6 logo" src="{% static 'image/logo.png' %}">
+        <div class="row justify-content-center">
+            <div class="col-4 align-self-center">
+                <div class="login_form">
+                    <form method="POST">
+                    {% csrf_token %}
+                    <div>
+                      <label>Введите логин</label><br>
+                      <input type="text" name="login" value="">
+                    </div>
+                    <div>
+                      <label>Введите пароль</label><br>
+                      <input type="text" name="password" value="">
+                    </div>
+                    {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                            {{ message }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <input class="enter" type="submit" name="" value="Войти">
+                </form>
+                <a href="register/">Регистрация</a>
+                </div>
+            </div>
+        </div>
     </div>
-    {% if current_user == None %}
-        <form class="login" method="POST">
-            {% csrf_token %}
-            <p>
-              <label>Введите логин</label><br>
-              <input type="text" name="login" value="">
-            </p>
-            <p>
-              <label>Введите пароль</label><br>
-              <input type="text" name="password" value="">
-            </p>
-            <input type="submit" name="" value="Войти">
-        </form>
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
-                {{ message }}
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        <a href="register/">Регистрация</a>
-    {% endif %}
 
-    {% if current_user %}
-        {% if current_user.get_role != "manager" %}
-        <h3>Задачи на вас</h3>
-        <table>
-            <thead>
-            <th>Задание</th>
-            <th>Проект</th>
-            <th>Статус</th>
-            <th>Оценка в story point</th>
-            </thead>
+{% endif %}
+
+{% if current_user %}
+    <header class="header">
+        <img class="logo" src="{% static 'image/logo.png' %}">
+        {% if current_user %}
+        <form action="logout/">
+            <button><span>Выйти</span></button>
+        </form>
+        {% endif %}
+    </header>
+
+    {% if current_user.get_role == "worker" %}
+    <div class="row custom_row">
+        <div class="col-5 task_list">
+            <div class="task">
+                <h3>Задачи на вас</h3>
+            </div>
             {% for task in tasks %}
                 {% if task.executor_id == current_user.id %}
-                <tr>
-                    <td>{{ task.title }}</td>
+                <div class="task">
+                    <p>{{ task.title }}</p>
                     {% for project in projects %}
                         {% if task.project_id == project.id  %}
-                            <td>{{ project.title }}</td>
+                            <p>Для проекта {{ project.title }}</p>
                         {% endif %}
                     {% endfor %}
-                    <td>{{ task.status }}</td>
-                    <td>{{ task.story_point }}</td>
-                </tr>
+                    <p>Текущее состояние: {{ task.status }}</p>
+                    <p>Оценка: {{ task.story_point }} sp</p>
+                    <form action="project/{{ task.project_id }}/task/{{ task.id }}/" class="custom_button">
+                        <button><span>Перейти к задаче</span></button>
+                    </form>
+                </div>
                 {% endif %}
-
             {% endfor %}
-        </table>
 
-        <h3>Задачи для ревью</h3>
-        <table>
-            <thead>
-            <th>Задание</th>
-            <th>Проект</th>
-            <th>Статус</th>
-            <th>Оценка в story point</th>
-            </thead>
-            {% for task in tasks %}
+            {% if review_tasks %}
+            <div class="task">
+                <h3>Задачи для ревью</h3>
+            </div>
+            {% for task in review_tasks %}
                 {% if task.reviewer_id == current_user.id %}
-                <tr>
-                <td>{{ task.title }}</td>
-                {% for project in projects %}
-                    {% if task.project_id == project.id  %}
-                        <td>{{ project.title }}</td>
-                    {% endif %}
-                {% endfor %}
-                <td>{{ task.status }}</td>
-                <td>{{ task.story_point }}</td>
-                </tr>
+                <div class="task">
+                    <p>{{ task.title }}</p>
+                    {% for project in projects %}
+                        {% if task.project_id == project.id  %}
+                            <p>Для проекта {{ project.title }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <p>Текущее состояние: {{ task.status }}</p>
+                    <p>Оценка: {{ task.story_point }} sp</p>
+                    <form action="project/{{ task.project_id }}/task/{{ task.id }}" class="custom_button">
+                        <button><span>Перейти к задаче</span></button>
+                    </form>
+                </div>
                 {% endif %}
             {% endfor %}
-        </table>
-        {% endif %}
 
-        {% if current_user.get_role == "project_leader" %}
-        <h3>Ваши проекты</h3>
-        <table>
-            <thead>
-            <th>Название</th>
-            <th>Статус</th>
-            </thead>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if current_user.get_role == "project_leader" %}
+    <div class="row custom_row">
+        <div class="col-5 task_list">
+            <div class="task">
+                <h3>Задачи на вас</h3>
+            </div>
+            {% for task in tasks %}
+                {% if task.executor_id == current_user.id %}
+                <div class="task">
+                    <p>{{ task.title }}</p>
+                    {% for project in projects %}
+                        {% if task.project_id == project.id  %}
+                            <p>Для проекта {{ project.title }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <p>Текущее состояние: {{ task.status }}</p>
+                    <p>Оценка: {{ task.story_point }} sp</p>
+                    <form action="project/{{ task.project_id }}/task/{{ task.id }}" class="custom_button">
+                        <button><span>Перейти к задаче</span></button>
+                    </form>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if review_tasks %}
+            <div class="task">
+                <h3>Задачи для ревью</h3>
+            </div>
+            {% for task in review_tasks %}
+                {% if task.reviewer_id == current_user.id %}
+                <div class="task">
+                    <p>{{ task.title }}</p>
+                    {% for project in projects %}
+                        {% if task.project_id == project.id  %}
+                            <p>Для проекта {{ project.title }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <p>Текущее состояние: {{ task.status }}</p>
+                    <p>Оценка: {{ task.story_point }} sp</p>
+                    <form  class="custom_button" action="project/{{ task.project_id }}/task/{{ task.id }}">
+                        <button>Перейти к задаче</button>
+                    </form>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            {% endif %}
+        </div>
+
+        <div class="col-5 project_list">
+            <div class="project">
+                <h3>Проекты</h3>
+            </div>
+
             {% for project in projects %}
                 {% if project.leader_id == current_user.id %}
-                <tr>
-                <td>{{ project.title }}</td>
-                <td>{{ project.status }}</td>
-                <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
-                </tr>
+                <div class="project">
+                    <p>Название {{ project.title }}</p>
+                    <p>Статус: {{ project.status }}</p>
+                    <form action="project/{{ project.id }}" class="custom_button">
+                        <button><span>Перейти к проекту</span></button>
+                    </form>
+                </div>
                 {% endif %}
             {% endfor %}
-        </table>
-        {% endif %}
 
-        {% if current_user.get_role == "manager"%}
-        <h3>Проекты</h3>
-            {% if current_user.get_role == "manager" %}
-                <a href="add_project">Создать новый проект</a>
-            {% endif %}
-        <table>
-            <thead>
-            <th>Название</th>
-            <th>Статус</th>
-            <th>Глава</th>
-            </thead>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row custom_row">
+    {% if current_user.get_role == "manager"%}
+        <div class="col-5 project_list">
+            <div class="project">
+                <h3>Проекты</h3>
+            </div>
             {% for project in projects %}
-                <tr>
-                <td>{{ project.title }}</td>
-                <td>{{ project.status }}</td>
+            <div class="project">
+                <p>{{ project.title }}</p>
+                <p>Статус: {{ project.status }}</p>
                 {% for user in users %}
                     {% if project.leader_id == user.id %}
-                    <td>{{ user.last_name }} {{ user.first_name }}</td>
+                    <p>Руководитель проекта: {{ user.last_name }} {{ user.first_name }}</p>
                     {% endif %}
                 {% endfor %}
-                <th><a href="project/{{ project.id }}">Перейти к проекту</a></th>
-                </tr>
+                <form action="project/{{ project.id }}" class="custom_button">
+                    <button>Перейти к проекту</button>
+                </form>
+            </div>
             {% endfor %}
-        </table>
-        <div class="sprint">
-            <p>Текущий спринт</p>
-            {% if not sprint %}
-                <p>Спринт не объявен</p>
-            {% else %}
-            <p>{{ sprint.date_of_start.date }} - {{ sprint.date_of_end.date }}</p>
-            {% endif %}
-            <p>Объявить спринт</p>
-            <form class="sprint_form" method="post">
-                {% csrf_token %}
-                <p>
-                    <label>Дата начала спринта</label><br>
-                    <input type="date" name="start" required>
-                </p>
-                <p>
-                    <label>Количество дней в спринте</label><br>
-                    <input type="number" name="days" required>
-                </p>
-                <input type="submit" name="" value="Объявить новый спринт">
+            {% if current_user.get_role == "manager" %}
+            <form action="add_project" class="custom_button">
+                <button><span>Создать новый проект</span></button>
             </form>
+            {% endif %}
         </div>
-        {% endif %}
+        <div class="col-5 sprint">
+            <div class="current_sprint">
+                <p>Текущий спринт:</p>
+                {% if not sprint %}
+                    <p>Спринт не объявен</p>
+                {% else %}
+                <p>{{ sprint.date_of_start.date }} - {{ sprint.date_of_end.date }}</p>
+                {% endif %}
+            </div>
+            <div class="new_sprint">
+                <p>Объявить спринт новый спринт</p>
+                <form class="sprint_form" method="post">
+                    {% csrf_token %}
+                    <div>
+                        <label>Дата начала спринта:</label><br>
+                        <input type="date" name="start" required>
+                    </div>
+                    <div>
+                        <label>Количество дней в спринте:</label><br>
+                        <input type="number" name="days" required>
+                    </div>
+                    <input class="enter" type="submit" value="Объявить новый спринт">
+                </form>
+            </div>
+            {% if messages %}
+                {% for message in messages %}
+                <p {% if message.tags %} class="col-5 description text-center" {% endif %}>
+                    {{ message }}
+                </p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
     {% endif %}
-</div>
+{% endif %}
 {% endblock %}

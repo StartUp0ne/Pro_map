@@ -1,41 +1,62 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="limiter">
-    <h2>Проект: {{ project.title }}</h2>
-    <p>Описание:</p>
-    <p>{{ project.description }}</p>
-    <p>Текущее состояние проекта: {{ project.status }}</p>
-
-
-    <div class="workers">
-        <h3>Участники проекта</h3>
-        <p>Лидер: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
-        {% for user in users %}
-            {% if user.project_id == project.id %}
-            <p>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+<div class="content">
+    <header class="header">
+        <img class="logo" src="{% static 'image/logo.png' %}">
+        {% if current_user %}
+        <form action="logout/">
+            <button><span>Выйти</span></button>
+        </form>
+        {% endif %}
+    </header>
+    <div class="row custom_row">
+        <h4 class="text-center">Проект: {{ project.title }}</h4>
+        <div class="col-5 info">
+            <p>Описание проекта:</p>
+            <p class="description">{{ project.description }}</p>
+            <p>Текущее состояние проекта: {{ project.status }}</p>
+            {% if current_user.get_role != "worker" %}
+            <form action="edit_project/" class="custom_button_white">
+                <button>Редактировать проект</button>
+            </form>
+            <form action="delete_project/" class="custom_button_white">
+                <button>Удалить проект</button>
+            </form>
             {% endif %}
-        {% endfor %}
+        </div>
+        <div class="col-5 workers">
+            <h3 class="text-center">Участники проекта</h3>
+            <p>Лидер: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
+            {% for user in users %}
+                {% if user.project_id == project.id and user.id != leader.id  %}
+                <p>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
-    <div>
-        <h3>Текущие задачи</h3>
+    <div class="row tasks_list_in_project">
+        <h3 class="text-center">Текущие задачи</h3>
         {% if current_user.get_role != "worker" %}
             {% for task in tasks %}
-            {% if task.project_id == project.id %}
-            <div>
-                <p>Задача: <a href="task/{{ task.id }}/">{{ task.title }}</a></p><br>
-                <p>Оценка: {{ task.story_point }}</p><br>
-                <p>Статус: {{ task.status }}</p>
-                <p><a href="delete_task/{{ task.id }}/">Удалить задачу</a></p>
-            </div>
-            {% endif %}
+                {% if task.project_id == project.id %}
+                <div class="col-4 task">
+                    <p>Задача: {{ task.title }}</p>
+                    <p>Оценка: {{ task.story_point }}</p>
+                    <p>Статус: {{ task.status }}</p>
+                    <form action="task/{{ task.id }}/" class="custom_button_white">
+                        <button>Перейти к задаче</button>
+                    </form>
+                </div>
+                {% endif %}
             {% endfor %}
+            <form action="add_task/" class="custom_button">
+                <button>Создать новую задачу</button>
+            </form>
         {% endif %}
-        <a href="add_task/">Создать новую задачу</a>
+        <form action="/" class="custom_button_back">
+            <button>Назад</button>
+        </form>
     </div>
-    {% if current_user.get_role != "worker" %}
-    <a href="edit_project/">Редактировать проект</a>
-    <a href="delete_project/">Удалить проект</a>
-    {% endif %}
 </div>
 {% endblock %}

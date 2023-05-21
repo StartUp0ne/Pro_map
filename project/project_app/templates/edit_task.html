@@ -1,54 +1,108 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="limiter">
-    <form class="register" method="POST">
-        {% csrf_token %}
-        <p>
-          <label>Название</label><br>
-          <input type="text" name="title" value="{{ task.title }}">
-        </p>
-        <p>
-          <label>Пояснение</label><br>
-          <input type="text" name="description" value="{{ task.description }}">
-        </p>
-        <p>
-          <label>Исполнитель задачи</label><br>
-          <select name="executor" >
-            <option value="{{ task.executor_id }}">Выберите из списка</option>
-              {% for user in users %}
-                {% if user.get_role != "manager" %}
-                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
-                {% endif %}
-              {% endfor %}
-          </select>
-        </p>
-        <p>
-          <label>Ревьюер задачи</label><br>
-          <select name="reviewer">
-            <option value="{{ task.reviewer_id }}">Выберите из списка</option>
-              {% for user in users %}
-                {% if user.get_role != "manager" %}
-                <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name }}</option>
-                {% endif %}
-              {% endfor %}
-          </select>
-        </p>
-        <p>
-            <label>Статус</label><br>
-            <select name="status">
-                <option value="{{ task.status }}">Выберите из списка</option>
-                <option value="wait">Ожидает начала</option>
-                <option value="work">В работе</option>
-                <option value="review">На ревью</option>
-                <option value="Done">Готово</option>
-            </select>
-        </p>
-        <p>
-            <label>Оценка в Story points</label><br>
-            <input type="number" value="{{ task.story_point }}" >
-        </p>
-        <input type="submit" name="" value="Сохранить изменения">
+<header class="header">
+    <img class="logo" src="{% static 'image/logo.png' %}">
+    {% if current_user %}
+    <form action="logout/" target="_blank">
+        <button><span>Выйти</span></button>
     </form>
+    {% endif %}
+</header>
+<div class="content">
+    <div class="row custom_row">
+        {% if current_user != "worker" %}
+        <div class="col-6 edit_project">
+            <form method="POST">
+                {% csrf_token %}
+                <h3 class="text-center">{{ task.title }}</h3>
+                <p>
+                  <label>Название</label><br>
+                  <input type="text" name="title" value="{{ task.title }}">
+                </p>
+                <p>
+                  <label>Пояснение</label><br>
+                  <input type="text" name="description" value="{{ task.description }}">
+                </p>
+                <p>
+                  <label>Исполнитель задачи</label><br>
+                  <select name="executor" >
+                    <option value="{{ task.executor_id }}">Выберите из списка</option>
+                      {% for user in users %}
+                        {% if user.get_role != "manager" %}
+                        <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  </select>
+                </p>
+                <p>
+                  <label>Ревьюер задачи</label><br>
+                  <select name="reviewer">
+                    <option value="{{ task.reviewer_id }}">Выберите из списка</option>
+                      {% for user in users %}
+                        {% if user.get_role != "manager" %}
+                        <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  </select>
+                </p>
+                <p>
+                    <label>Статус</label><br>
+                    <select name="status">
+                        <option value="{{ task.status }}">Выберите из списка</option>
+                        <option value="wait">Ожидает начала</option>
+                        <option value="work">В работе</option>
+                        <option value="review">На ревью</option>
+                        <option value="Done">Готово</option>
+                    </select>
+                </p>
+                <p>
+                    <label>Оценка в Story points</label><br>
+                    <input type="number" value="{{ task.story_point }}" name="story_point">
+                </p>
+                <input type="submit" name="" value="Сохранить изменения">
+            </form>
+            <form action="#" class="custom_button_back">
+                <button onclick="history.back();return false;">Назад</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="col-6 edit_project">
+            <form method="POST">
+                {% csrf_token %}
+                <h3 class="text-center">{{ task.title }}</h3>
+                <p>
+                  <label>Ревьюер задачи</label><br>
+                  <select name="reviewer">
+                    <option value="{{ task.reviewer_id }}">Выберите из списка</option>
+                      {% for user in users %}
+                        {% if user.get_role != "manager" %}
+                        <option value="{{ user.id }}">{{ user.first_name }}  {{ user.last_name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                  </select>
+                </p>
+                <p>
+                    <label>Статус</label><br>
+                    <select name="status">
+                        <option value="{{ task.status }}">Выберите из списка</option>
+                        <option value="wait">Ожидает начала</option>
+                        <option value="work">В работе</option>
+                        <option value="review">На ревью</option>
+                        <option value="done">Готово</option>
+                    </select>
+                </p>
+                <p>
+                    <label>Оценка в Story points</label><br>
+                    <input type="number" value="{{ task.story_point }}" name="story_point">
+                </p>
+                <input type="submit" name="" value="Сохранить изменения">
+            </form>
+            <form action="#" class="custom_button_back">
+                <button onclick="history.back();return false;">Назад</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

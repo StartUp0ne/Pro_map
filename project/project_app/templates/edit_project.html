@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="limiter">
-    <form class="edit_project" method="post">
+<div class="content">
+    <header>
+        <img class="logo" src="{% static 'image/logo.png' %}">
+        {% if current_user %}
+        <form action="logout/">
+            <button><span>Выйти</span></button>
+        </form>
+        {% endif %}
+    </header>
+    <div class="row custom_row">
+    <form class="col-6 edit_project" method="post">
         {% csrf_token %}
+        <h3 class="text-center">{{ project.title }}</h3>
         <p>
           <label>Название</label><br>
           <input type="text" name="title" value="{{ project.title }}">
@@ -35,7 +45,10 @@
         </p>
         <input type="submit" name="" value="Сохранить изменения">
     </form>
-    <a href="#" onclick="history.back();return false;">Отмена</a>
+    <form action="#" class="custom_button_back">
+        <button onclick="history.back();return false;">Назад</button>
+    </form>
+    </div>
 </div>
 
 {% endblock %}

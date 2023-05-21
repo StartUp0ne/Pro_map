@@ -13,8 +13,8 @@ urlpatterns = [
     path("project/<int:project_id>/task/<int:task_id>/", task, name="task"),
     path("project/<int:project_id>/add_task/", add_task, name="add_task"),
     path("project/<int:project_id>/task/<int:task_id>/edit_task/", edit_task, name="edit_task"),
-    path("project/<int:project_id>/delete_task/<int:task_id>/", delete_task, name="delete_task"),
+    path("project/<int:project_id>/task/<int:task_id>/delete_task/", delete_task, name="delete_task"),
+    path("project/<int:project_id>/task/<int:task_id>/close_task/", close_task, name="close_task"),
     path("project/<int:project_id>/task/<int:task_id>/delete_comment/<int:comment_id>/", delete_comment,
          name="delete_comment"),
-
 ]
