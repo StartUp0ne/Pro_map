@@ -34,7 +34,9 @@
             </div>
         </div>
     </div>
+    <footer>
 
+    </footer>
 {% endif %}
 
 {% if current_user %}
@@ -95,6 +97,10 @@
 
             {% endif %}
         </div>
+    </div>
+    <footer>
+        <p class="text-center">В будущем здесь будет информация об организации</p>
+    </footer>
     {% endif %}
 
     {% if current_user.get_role == "project_leader" %}
@@ -162,9 +168,11 @@
                 </div>
                 {% endif %}
             {% endfor %}
-
         </div>
     </div>
+    <footer>
+        <p class="text-center">В будущем здесь будет информация об организации</p>
+    </footer>
     {% endif %}
 
     <div class="row custom_row">
@@ -225,7 +233,11 @@
                 {% endfor %}
             {% endif %}
         </div>
+        <footer>
+            <p class="text-center">В будущем здесь будет информация об организации</p>
+        </footer>
     </div>
     {% endif %}
 {% endif %}
+</div>
 {% endblock %}

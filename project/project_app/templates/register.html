@@ -3,7 +3,7 @@
 {% block content %}
   <div class="content">
     <div class="limiter">
-      <form class="register" method="POST">
+      <form class="col-6 edit_project" method="POST">
         {% csrf_token %}
         <p>
           <label></label>
@@ -44,7 +44,9 @@
             {% endfor %}
         </ul>
       {% endif %}
+    <form action="#" class="custom_button_back">
+      <button onclick="history.back();return false;">Назад</button>
+    </form>
     </div>
-    <a href="/">Отмена</a>
   </div>
 {% endblock %}

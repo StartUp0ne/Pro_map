@@ -5,9 +5,8 @@
 
 body
 {
-    display: flex;
     width: 100%;
-    height:= ;
+    height: 800px;
 }
 
 .text-center {
@@ -16,11 +15,9 @@ body
 
 .login_blok {
   display: block;
-  min-width: 100%;
-  min-height: 805px;
-  position: relative;
+  height: 800px;
+  width: 100%;
   background-color: #104BA9;
-  background-size: cover;
   background-position: center;
 }
 
@@ -131,6 +128,19 @@ header button span {
   justify-content: center
 }
 
+footer {
+  display: block;
+  position: relative;
+  background-color: #104BA9;
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  text-align: center;
+  color: #fafaff;
+}
+
 .custom_row {
   display: flex;
   padding-top: 60px;
@@ -238,6 +248,10 @@ header button span {
   border-radius: 12px;
   padding: 0px 14px 0px 14px;
   border: 0;
+}
+
+.close_task button {
+
 }
 
 .sprint {
@@ -371,7 +385,7 @@ header button span {
   padding-right: 10px;
   color: #000000;
   border: 1px solid;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .info form {

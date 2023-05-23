@@ -19,6 +19,8 @@
                 {% if user.id == task.executor_id %}
                     <p>Исполнитель: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
                 {% endif %}
+            {% endfor %}
+            {% for user in users %}
                 {% if user.id == task.reviewer_id %}
                     <p>Ревьюер: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
                 {% endif %}
@@ -34,13 +36,15 @@
                 <form action="close_task/" class="col-4 custom_button_white_task">
                     <button>Закрыть задачу</button>
                 </form>
-                {% if current_user.get_role != "worker" %}
                 <form action="delete_task/" class="col-4 custom_button_white_task">
                     <button>Удалить задачу</button>
                 </form>
-                {% endif %}
             </div>
-
+            {% endif %}
+            {% if current_user.get_role == "worker" and current_user.id == task.reviewer_id %}
+            <form action="close_task/" class="col-4 custom_button_white_task">
+                <button>Закрыть задачу</button>
+            </form>
             {% endif %}
         </div>
     </div>
