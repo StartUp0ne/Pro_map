@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from .models import User, Project, Task, Comment, Sprint
+from django.core.exceptions import ObjectDoesNotExist
 from hashlib import pbkdf2_hmac
 from django.http import HttpResponseRedirect, HttpResponseNotFound
 
@@ -62,7 +63,7 @@ def main_view(request):
                     return HttpResponseRedirect("/")
                 else:
                     messages.error(request, "Неверный пароль")
-            except User.DoesNotExist:
+            except ObjectDoesNotExist:
                 messages.error(request, "Пользователь с таким логином не найден")
         return render(request, "index.html", None)
 
@@ -156,7 +157,6 @@ def delete_project(request, project_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect("")
     user = User.objects.get(id=user)
     if user.get_role() == 'manager':
@@ -164,7 +164,7 @@ def delete_project(request, project_id: int):
             current_project = Project.objects.get(id=project_id)
             current_project.delete()
             return HttpResponseRedirect("/")
-        except Project.DoesNotFound:
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("<h2>Project not found</h2>")
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
@@ -174,13 +174,12 @@ def edit_project(request, project_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect('')
     current_user = User.objects.get(id=user)
     users = User.objects.all()
     try:
         current_project = Project.objects.get(id=project_id)
-    except Project.DoesNotExist:
+    except ObjectDoesNotExist:
         return HttpResponseNotFound("<h2>Project not found</h2>")
 
     if current_user.id == current_project.manager_id or current_user.id == current_project.leader_id:
@@ -203,7 +202,6 @@ def task(request, project_id: int, task_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect('')
     current_user = User.objects.get(id=user)
     users = User.objects.all()
@@ -228,19 +226,14 @@ def add_task(request, project_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect('')
 
     current_user = User.objects.get(id=user)
     users = User.objects.all()
     current_project = Project.objects.get(id=project_id)
     sprints = Sprint.objects.all()
-    current_sprint = None
-    for sprint in sprints:
-        if sprint.date_of_start <= datetime.now(timezone.utc) <= sprint.date_of_end:
-            current_sprint = sprint
     new_task = Task()
-    if current_user.get_role() == "manager" or current_user.get_role() == "project_leader":
+    if current_user.get_role() != "worker":
         try:
             if request.method == "POST":
                 new_task.title = request.POST.get('title')
@@ -276,15 +269,14 @@ def edit_task(request, project_id: int, task_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect('')
     try:
         current_task = Task.objects.get(id=task_id)
-    except Task.DoesNotExist:
+    except ObjectDoesNotExist:
         return HttpResponseNotFound("<h2>This task not found</h2>")
     users = User.objects.all()
     current_user = User.objects.get(id=user)
-    if current_user.get_role() == "manager" or current_user.get_role() == "project_leader":
+    if current_user.get_role() != "worker":
         if request.method == "POST":
             current_task.title = request.POST.get('title')
             current_task.description = request.POST.get('description')
@@ -319,12 +311,12 @@ def delete_task(request, project_id: int, task_id: int):
     except Exception:
         return HttpResponseRedirect("")
     user = User.objects.get(id=user)
-    if user.get_role() == "manager" or user.get_role() == "project_leader":
+    if user.get_role() != "worker":
         try:
             current_task = Task.objects.get(id=task_id)
             current_task.delete()
             return HttpResponseRedirect("/")
-        except Task.DoesNotExist:
+        except ObjectDoesNotExist:
             return HttpResponseNotFound("<h2>This task not found</h2>")
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
@@ -335,13 +327,12 @@ def close_task(request, project_id: int, task_id: int):
         user = request.session['user_id']
     except Exception:
         return HttpResponseRedirect("")
-    user = User.objects.get(id=user)
     try:
         current_task = Task.objects.get(id=task_id)
         current_task.status = "done"
         current_task.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-    except Task.DoesNotExist:
+    except ObjectDoesNotExist:
         return HttpResponseNotFound("<h2>This task not found</h2>")
 
 
@@ -349,16 +340,14 @@ def delete_comment(request, project_id: int, task_id: int, comment_id: int):
     try:
         user = request.session['user_id']
     except Exception:
-        user = None
         return HttpResponseRedirect("")
     try:
         current_comment = Comment.objects.get(id=comment_id)
-    except Comment.DoesNotExist:
+    except ObjectDoesNotExist:
         return HttpResponseNotFound("<h2>Comment not found</h2>")
     user = User.objects.get(id=user)
-    if user.get_role() == "manager" or user.get_role() == "project_leader" or user.id == current_comment.author_id:
+    if user.get_role() == "!worker" or user.id == current_comment.author_id:
         current_comment.delete()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     else:
         return HttpResponseNotFound("<h2>Недостаточно прав доступа</h2>")
-

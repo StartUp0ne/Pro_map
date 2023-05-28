@@ -4,11 +4,6 @@
 <div class="content">
     <header class="header">
         <img class="logo" src="{% static 'image/logo.png' %}">
-        {% if current_user %}
-        <form action="logout/">
-            <button><span>Выйти</span></button>
-        </form>
-        {% endif %}
     </header>
     <div class="row custom_row">
         <form class="col-6 add_task" method="POST">

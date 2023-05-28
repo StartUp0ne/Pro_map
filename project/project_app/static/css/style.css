@@ -129,16 +129,7 @@ header button span {
 }
 
 footer {
-  display: block;
-  position: relative;
-  background-color: #104BA9;
-  height: 100px;
-  width: 100%;
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  text-align: center;
-  color: #fafaff;
+
 }
 
 .custom_row {

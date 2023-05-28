@@ -3,11 +3,6 @@
 {% block content %}
 <header class="header">
     <img class="logo" src="{% static 'image/logo.png' %}">
-    {% if current_user %}
-    <form action="logout/" target="_blank">
-        <button><span>Выйти</span></button>
-    </form>
-    {% endif %}
 </header>
 <div class="content">
     <div class="row custom_row">
