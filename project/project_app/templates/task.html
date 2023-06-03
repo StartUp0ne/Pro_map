@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+    <header class="header">
+    <img class="logo" src="{% static 'image/logo.png' %}">
+    </header>
+    <div class="row custom_row">
+        <div class="col-8 info">
+            <h3 class="text-center">Задача: {{ task.title }}</h3>
+            <p>Пояснение: </p>
+            <p class="col-11 description">{{ task.description }}</p>
+            <p>Статус: {{ task.status }}<p>
+            <p>story point: {{ task.story_point }}</p>
+            {% for user in users %}
+                {% if user.id == task.executor_id %}
+                    <p>Исполнитель: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+                {% endif %}
+            {% endfor %}
+            {% for user in users %}
+                {% if user.id == task.reviewer_id %}
+                    <p>Ревьюер: {{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+                {% endif %}
+            {% endfor %}
+            {% if task.reviewer_id == -1 %}
+                    <p>Ревьюер: не назначен</p>
+            {% endif %}
+            {% if current_user.get_role != "worker" %}
+            <div class="row">
+                <form action="edit_task/" class="col-4 custom_button_white_task">
+                    <button>Редактировать</button>
+                </form>
+                <form action="close_task/" class="col-4 custom_button_white_task">
+                    <button>Закрыть задачу</button>
+                </form>
+                <form action="delete_task/" class="col-4 custom_button_white_task">
+                    <button>Удалить задачу</button>
+                </form>
+            </div>
+            {% endif %}
+            {% if current_user.get_role == "worker" and current_user.id == task.reviewer_id %}
+            <form action="close_task/" class="col-4 custom_button_white_task">
+                <button>Закрыть задачу</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row comment_list">
+        <h3 class="text-center">Комментарии к задаче:</h3>
+        {% for comment in comments %}
+            <div class="col-6 comment">
+                {% for user in users %}
+                    {% if user.id == comment.author_id %}
+                        <p class="text-center">Автор: {{ user.last_name }} {{ user.first_name }} - {{ comment.date_of_creation }}</p>
+                    {% endif %}
+                {% endfor %}
+                <p class="col-8 description text-center">{{ comment }}</p>
+                {% if current_user.id == comment.author_id %}
+                    <form action="delete_comment/{{ comment.id }}/" class="custom_button_white">
+                        <button>Удалить комментарий</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="row comment_list">
+        <div class="col-6 new_comment">
+            <form class="new_comment" method="post">
+            {% csrf_token %}
+            <p class="text-center">
+              <label>Новый комментарий:</label><br>
+              <input type="text" name="new_comment">
+            </p>
+            <input type="submit" name="" value="Отправить">
+            </form>
+        </div>
+    </div>
+    <form action="/" class="custom_button_back">
+        <button>Назад</button>
+    </form>
+    {% if current_user %}
+    <footer >
+        <p>Текущий пользователь: {{ current_user.last_name }} {{ current_user.first_name }} {{ current_user.middle_name }}</p>
+    </footer>
+    {% endif %}
+</div>
+{% endblock %}

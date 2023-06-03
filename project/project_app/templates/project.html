@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+    <header class="header">
+        <img class="logo" src="{% static 'image/logo.png' %}">
+    </header>
+    <div class="row custom_row">
+        <h4 class="text-center">Проект: {{ project.title }}</h4>
+        <div class="col-5 info">
+            <p>Описание проекта:</p>
+            <p class="description">{{ project.description }}</p>
+            <p>Текущее состояние проекта: {{ project.status }}</p>
+            {% if current_user.get_role != "worker" %}
+            <form action="edit_project/" class="custom_button_white">
+                <button>Редактировать проект</button>
+            </form>
+            <form action="delete_project/" class="custom_button_white">
+                <button>Удалить проект</button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="col-5 workers">
+            <h3 class="text-center">Участники проекта</h3>
+            <p>Лидер: {{ leader.last_name }} {{ leader.first_name }} {{ leader.middle_name }}</p>
+            {% for user in users %}
+                {% if user.project_id == project.id and user.id != leader.id  %}
+                <p>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row tasks_list_in_project">
+        <h3 class="text-center">Текущие задачи</h3>
+        {% if current_user.get_role != "worker" %}
+            {% for task in tasks %}
+                {% if task.project_id == project.id and task.status != "done" %}
+                <div class="col-4 task">
+                    <p>Задача: {{ task.title }}</p>
+                    <p>Оценка: {{ task.story_point }}</p>
+                    <p>Статус: {{ task.status }}</p>
+                    <form action="task/{{ task.id }}/" class="custom_button_white">
+                        <button>Перейти к задаче</button>
+                    </form>
+                </div>
+                {% endif %}
+            {% endfor %}
+            <form action="add_task/" class="custom_button">
+                <button>Создать новую задачу</button>
+            </form>
+        {% endif %}
+        <form action="/" class="custom_button_back">
+            <button>Назад</button>
+        </form>
+    </div>
+    {% if current_user %}
+    <footer >
+        <p>Текущий пользователь: {{ current_user.last_name }} {{ current_user.first_name }} {{ current_user.middle_name }}</p>
+    </footer>
+    {% endif %}
+</div>
+{% endblock %}

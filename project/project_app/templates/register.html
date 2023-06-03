@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <div class="content">
+    <header class="header">
+      <img class="logo" src="{% static 'image/logo.png' %}">
+    </header>
+    <div class="row custom_row">
+      <form class="col-6 edit_project" method="POST">
+        {% csrf_token %}
+        <h2 class="text-center">Регистрация</h2>
+        <p>
+          <label>Фамилия</label><br>
+          <input type="text" name="last_name" required>
+        </p>
+        <p>
+          <label>Имя</label><br>
+          <input type="text" name="first_name" required>
+        </p>
+        <p>
+          <label>Отчество (если имеется)</label><br>
+          <input type="text" name="middle_name"  required>
+        </p>
+        <p>
+          <label>Email</label><br>
+          <input type="text" name="email" required>
+        </p>
+        <p>
+          <label>Введите логин</label><br>
+          <input type="text" name="login" required>
+        </p>
+        <p>
+          <label>Введите пароль</label>
+          <input type="password" minlength="6" name="password" required>
+        </p>
+        <input type="submit" name="" value="Сохранить">
+      </form>
+      {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+              {{ message }} | <a href="/">Войти</a>
+            </li>
+            {% endfor %}
+        </ul>
+      {% endif %}
+    <form action="#" class="custom_button_back">
+      <button onclick="history.back();return false;">Назад</button>
+    </form>
+    </div>
+  </div>
+{% endblock %}
