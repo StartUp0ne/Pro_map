@@ -78,5 +78,10 @@
     <form action="/" class="custom_button_back">
         <button>Назад</button>
     </form>
+    {% if current_user %}
+    <footer >
+        <p>Текущий пользователь: {{ current_user.last_name }} {{ current_user.first_name }} {{ current_user.middle_name }}</p>
+    </footer>
+    {% endif %}
 </div>
 {% endblock %}

@@ -34,7 +34,7 @@
         <h3 class="text-center">Текущие задачи</h3>
         {% if current_user.get_role != "worker" %}
             {% for task in tasks %}
-                {% if task.project_id == project.id %}
+                {% if task.project_id == project.id and task.status != "done" %}
                 <div class="col-4 task">
                     <p>Задача: {{ task.title }}</p>
                     <p>Оценка: {{ task.story_point }}</p>
@@ -53,8 +53,10 @@
             <button>Назад</button>
         </form>
     </div>
-    <footer>
-
+    {% if current_user %}
+    <footer >
+        <p>Текущий пользователь: {{ current_user.last_name }} {{ current_user.first_name }} {{ current_user.middle_name }}</p>
     </footer>
+    {% endif %}
 </div>
 {% endblock %}

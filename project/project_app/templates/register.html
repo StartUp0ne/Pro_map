@@ -2,36 +2,36 @@
 {% load static %}
 {% block content %}
   <div class="content">
-    <div class="limiter">
+    <header class="header">
+      <img class="logo" src="{% static 'image/logo.png' %}">
+    </header>
+    <div class="row custom_row">
       <form class="col-6 edit_project" method="POST">
         {% csrf_token %}
-        <p>
-          <label></label>
-          <input type="image" name="icon" >
-        </p>
+        <h2 class="text-center">Регистрация</h2>
         <p>
           <label>Фамилия</label><br>
-          <input type="text" name="last_name">
+          <input type="text" name="last_name" required>
         </p>
         <p>
           <label>Имя</label><br>
-          <input type="text" name="first_name">
+          <input type="text" name="first_name" required>
         </p>
         <p>
           <label>Отчество (если имеется)</label><br>
-          <input type="text" name="middle_name">
+          <input type="text" name="middle_name"  required>
         </p>
         <p>
           <label>Email</label><br>
-          <input type="text" name="email">
+          <input type="text" name="email" required>
         </p>
         <p>
           <label>Введите логин</label><br>
-          <input type="text" name="login">
+          <input type="text" name="login" required>
         </p>
         <p>
           <label>Введите пароль</label>
-          <input type="text" name="password">
+          <input type="password" minlength="6" name="password" required>
         </p>
         <input type="submit" name="" value="Сохранить">
       </form>

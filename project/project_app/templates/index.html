@@ -56,7 +56,7 @@
                 <h3>Задачи на вас</h3>
             </div>
             {% for task in tasks %}
-                {% if task.executor_id == current_user.id %}
+                {% if task.executor_id == current_user.id and task.status != "done" %}
                 <div class="task">
                     <p>{{ task.title }}</p>
                     {% for project in projects %}
@@ -110,7 +110,7 @@
                 <h3>Задачи на вас</h3>
             </div>
             {% for task in tasks %}
-                {% if task.executor_id == current_user.id %}
+                {% if task.executor_id == current_user.id and task.status != "done" %}
                 <div class="task">
                     <p>{{ task.title }}</p>
                     {% for project in projects %}
@@ -211,7 +211,7 @@
                 {% endif %}
             </div>
             <div class="new_sprint">
-                <p>Объявить спринт новый спринт</p>
+                <p>Объявление нового спринта</p>
                 <form class="sprint_form" method="post">
                     {% csrf_token %}
                     <div>
@@ -234,8 +234,10 @@
             {% endif %}
         </div>
     </div>
-    <footer>
-        <p class="text-center">В будущем здесь будет информация об организации</p>
+    {% endif %}
+    {% if current_user %}
+    <footer >
+        <p>Текущий пользователь: {{ current_user.last_name }} {{ current_user.first_name }} {{ current_user.middle_name }}</p>
     </footer>
     {% endif %}
 {% endif %}
